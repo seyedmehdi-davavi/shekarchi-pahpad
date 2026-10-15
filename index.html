@@ -1,0 +1,317 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>شکارچی آسمان | اتاق عملیات پدافند</title><style>
+:root{--mint:#91f5d0;--gold:#ffc76a;--red:#ff6e65;--panel:rgba(8,20,20,.9)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#050c0d;color:#eaf4ed;font-family:Vazirmatn,Tahoma,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+.shell{max-width:1500px;margin:auto;padding:16px 18px 20px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.brand{display:flex;gap:12px;align-items:center}
+.emblem{width:44px;height:44px;border:1px solid #91f5d077;border-radius:13px;display:grid;place-items:center;color:var(--mint);font-size:23px;background:#102322}
+.brand h1{font-size:19px;margin:0;font-weight:800}.brand small{display:block;color:#8ca6a0;font-size:11px;margin-top:2px}
+.live{color:var(--mint);border:1px solid #91f5d044;padding:7px 12px;border-radius:20px;font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}
+.viewport{position:relative;height:min(72vh,680px);min-height:430px;border:1px solid #9ae2ca26;border-radius:18px;overflow:hidden;background:#0a1216;box-shadow:0 18px 65px #0009;cursor:crosshair;touch-action:none}
+canvas#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#07131b22,transparent 40%,#07101155),radial-gradient(ellipse at 50% 50%,transparent 55%,#02100c66 100%)}
+.scanlines{position:absolute;inset:0;pointer-events:none;opacity:.14;background:repeating-linear-gradient(0deg,transparent 0 3px,#d8fff30a 4px)}
+#status{position:absolute;bottom:12px;right:16px;background:#071514c8;border:1px solid #c5f8e11f;padding:7px 12px;border-radius:9px;font-size:11px;color:#c7d8ce;pointer-events:none}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid #91f5d01f;border-radius:16px;padding:14px}
+.card-title{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;margin-bottom:12px}
+.subtle{font-size:10px;color:#8da69d;font-weight:400}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:#0b191a;border-radius:10px;padding:9px 10px;border:1px solid #91f5d012}
+.stat span{display:block;color:#8da69d;font-size:10px}.stat b{display:block;font-size:14px;margin-top:4px;color:#e5f0e9}
+.stat b.green{color:var(--mint)}.stat b.gold{color:var(--gold)}.stat b.red{color:var(--red)}
+.bar{height:7px;border-radius:5px;background:#0a1c1c;margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px;transition:width .25s;background:linear-gradient(90deg,#3fd9a0,#91f5d0)}
+.bar i.warn{background:linear-gradient(90deg,#e0a24a,#ffc76a)}
+.bar i.bad{background:linear-gradient(90deg,#c0443c,#ff6e65)}
+.btn{border:0;border-radius:12px;padding:13px;font:700 13px Vazirmatn,Tahoma;cursor:pointer;transition:.15s;width:100%}
+.btn:hover{filter:brightness(1.12)}.btn:active{transform:scale(.98)}
+.launch{background:linear-gradient(110deg,#e7a44e,#ffcb77);color:#24180c;box-shadow:0 5px 20px #d8903940;margin-bottom:8px}
+.launch:disabled{opacity:.4;cursor:not-allowed;filter:none}
+.siren{background:#1c2b2a;color:#ffc76a;border:1px solid #ffc76a55}
+.start{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:#04100cd9;backdrop-filter:blur(3px);text-align:center;padding:26px}
+.start h2{margin:0 0 10px;font-size:22px;color:var(--gold)}
+.start p{font-size:13px;line-height:2;color:#c9d8d1;margin:0 0 18px}
+.start .btn{max-width:280px;margin:auto}
+.go{background:linear-gradient(110deg,#2fae7d,#91f5d0);color:#05261b;font-size:15px;padding:15px}
+.over{position:absolute;inset:0;z-index:11;display:none;place-items:center;background:#120604e0;text-align:center;padding:26px}
+.over h2{color:var(--red);font-size:24px;margin:0 0 8px}
+.over p{color:#e8cfc9;font-size:13px;line-height:2}
+.over .btn{max-width:230px;margin-top:14px;background:#3f2320;color:var(--gold);border:1px solid #ffc76a44}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.viewport{height:56vh;min-height:340px}}
+</style></head><body>
+<main class="shell">
+<header class="top">
+<div class="brand"><div class="emblem">⌁</div><div><h1>شکارچی آسمان</h1><small>سامانه پدافند هوایی اتوماتیک · اتاق عملیات پناهگاه فرمان</small></div></div>
+<div class="top-right"><span style="font-size:11px;color:#8ca6a0">پایگاه کوهستانی ۰۷</span> <span class="live">● سامانه فعال</span></div>
+</header>
+<section class="layout">
+<div class="viewport" id="viewport">
+<canvas id="scene"></canvas>
+<div class="glass"></div><div class="scanlines"></div>
+<div id="status">آماده‌سازی سامانه…</div>
+<div class="start" id="startScreen">
+<div>
+<h2>⚠ حمله هوایی در پیش است</h2>
+<p>با موس/لمس نشانه‌گیر را حرکت دهید و روی هدف بزنید تا <b style="color:#91f5d0">قفل</b> شود.<br>سپس «شلیک موشک صیاد» یا کلیک دوم، موشک رهگیر را پرتاب می‌کند.<br>موشک‌کروز و بمب‌های هوشمند سقوط‌کرده را قبل از اصابت رهگیری کنید!</p>
+<button class="btn go" id="startBtn">▶ ورود به اتاق عملیات (فعال‌سازی صدا)</button>
+</div>
+</div>
+<div class="over" id="overScreen"><div><h2>پناهگاه از دست رفت</h2><p id="overStats"></p><button class="btn" id="retryBtn">⟲ تلاش دوباره</button></div></div>
+</div>
+<aside class="side">
+<section class="card">
+<div class="card-title"><span>وضعیت نبرد</span><span class="subtle" id="waveLbl">موج ۱</span></div>
+<div class="stats">
+<div class="stat"><span>امتیاز</span><b class="gold" id="score">۰</b></div>
+<div class="stat"><span>موج حمله</span><b id="wave">۱</b></div>
+<div class="stat"><span>مهمات موشک</span><b class="green" id="ammo">۱۲</b></div>
+<div class="stat"><span>سطح تهدید</span><b class="red" id="threat">عادی</b></div>
+<div class="stat"><span>سپر پناهگاه</span><b id="shieldB" style="font-size:11px">۱۰۰٪</b><div class="bar"><i id="shieldBar" style="width:100%"></i></div></div>
+<div class="stat"><span>بازپرگیری</span><b id="reloadB" style="font-size:11px">آماده</b><div class="bar"><i id="reloadBar" style="width:100%"></i></div></div>
+</div>
+</section>
+<section class="card" style="display:grid;gap:9px">
+<button class="btn launch" id="fireBtn" disabled>➤ شلیک موشک صیاد</button>
+<button class="btn siren" id="sirenBtn">🚨 آژیر حمله هوایی</button>
+<p class="subtle" style="text-align:center;margin:2px 0 0;line-height:1.9">کلیک/لمس روی هدف = قفل خودکار · کلیک دوباره = شلیک<br>هر پهپاد رهگیری‌شده ۱۰۰ امتیاز · موشککروز ۱۵۰</p>
+</section>
+</aside>
+</section>
+</main>
+<script>
+'use strict';
+(()=>{
+const $=s=>document.getElementById(s),canvas=$('scene'),ctx=canvas.getContext('2d',{alpha:false});
+const W=()=>innerWidth, status=$('status');
+let vw=800,vh=520,dpr=Math.min(devicePixelRatio||1,2);
+function resize(){const r=canvas.parentElement.getBoundingClientRect();vw=r.width;vh=r.height;canvas.width=vw*dpr;canvas.height=vh*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+addEventListener('resize',resize);resize();
+
+/* ---------- audio ---------- */
+let AC=null,sirenOsc=null,sirenOn=false;
+function audioInit(){if(AC)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function beep(f,d=.07,type='square',g=.05,f2){if(!AC)return;const o=AC.createOscillator(),v=AC.createGain();o.type=type;o.frequency.value=f;if(f2)o.frequency.linearRampToValueAtTime(f2,AC.currentTime+d);v.gain.value=g;v.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.connect(v);v.connect(AC.destination);o.start();o.stop(AC.currentTime+d);}
+function boom(big){if(!AC)return;const n=AC.createBufferSource(),b=AC.createBuffer(1,AC.sampleRate*(big?1.4:.8),AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.2);n.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=big?300:600;const v=AC.createGain();v.gain.value=big?.7:.4;v.gain.exponentialRampToValueAtTime(.001,AC.currentTime+(big?1.4:.8));n.connect(f);f.connect(v);v.connect(AC.destination);n.start();}
+function roar(){if(!AC)return;const n=AC.createBufferSource(),b=AC.createBuffer(1,AC.sampleRate*1.1,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*.9*(.4+.6*i/d.length);n.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=900;f.Q.value=.8;const v=AC.createGain();v.gain.value=.28;v.gain.exponentialRampToValueAtTime(.001,AC.currentTime+1.1);n.connect(f);f.connect(v);v.connect(AC.destination);n.start();beep(160,.9,'sawtooth',.05,80);}
+function toggleSiren(){if(!AC)return;if(sirenOn){try{sirenOsc.stop()}catch(e){}sirenOsc=null;sirenOn=false;$('sirenBtn').textContent='🚨 آژیر حمله هوایی';return}sirenOsc=AC.createOscillator();const v=AC.createGain(),lfo=AC.createOscillator(),lg=AC.createGain();sirenOsc.type='sawtooth';v.gain.value=.045;lfo.frequency.value=.55;lg.gain.value=180;lfo.connect(lg);lg.connect(sirenOsc.frequency);sirenOsc.frequency.value=520;sirenOsc.connect(v);v.connect(AC.destination);lfo.start();sirenOsc.start();sirenOn=true;$('sirenBtn').textContent='🔇 قطع آژیر';}
+
+/* ---------- game state ---------- */
+let running=false,score=0,wave=1,ammo=12,shield=100,reload=0,shake=0,locked=null,lockT=0,fireCool=0,spawnT=0,bombCount=0,last=0;
+const fa=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const enemies=[],missiles=[],parts=[],bombs=[],debris=[],floaters=[];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function spawnEnemy(){
+ const w=wave;const jet=Math.random()< .28+w*.04;
+ const dir=Math.random()<.5?1:-1;
+ const y=rnd(vh*.12,vh*.5),sp=rnd(40,70)*(1+w*.12)*(jet?1.5:1);
+ enemies.push({x:dir>0?-70:vw+70,y,vx:dir*sp,vy:Math.sin(rnd(0,6))*10,jet,hp:jet?2:1,w:jet?46:34,r:jet?30:24,trail:[],ph:rnd(0,9),dropT:rnd(2.5,6)/(1+w*.05)});
+}
+function spawnBomb(x,y){bombs.push({x,y,vx:rnd(-25,25),vy:50,r:9,t:0});status.textContent='⚠ موشک‌کروز شلیک شد! قبل از اصابت رهگیری کنید';beep(220,.25,'sawtooth',.09,90);}
+function explode(x,y,big){
+ for(let i=0;i<(big?46:22);i++){const a=rnd(0,6.283),s=rnd(30,big?260:150);parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-40,life:rnd(.4,big?1.1:.7),t:0,c:i%3?'#ffd27a':i%2?'#ff8a4d':'#fff3c9',r:rnd(2,big?6:4)})}
+ for(let i=0;i<(big?14:6);i++){const a=rnd(-3,0),s=rnd(40,150);debris.push({x,y,vx:Math.cos(a)*s*.4,vy:Math.sin(a)*s,rot:rnd(0,6),vr:rnd(-8,8),t:0,life:rnd(1,2.4),r:rnd(2,5)})}
+ shake=Math.min(shake+(big?16:8),26);boom(big);
+}
+function addScore(n,x,y){score+=n;floaters.push({x,y,t:0,txt:'+'+fa(n)});}
+function damage(n){shield=Math.max(0,shield-n);shake=Math.min(shake+18,30);explode(rnd(0,vw),vh-20,true);beep(90,.5,'sawtooth',.15,40);if(shield<=0)gameOver();}
+
+/* ---------- input ---------- */
+let mx=vw/2,my=vh*.4,pointerDown=false;
+function pos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+canvas.addEventListener('pointermove',e=>{const p=pos(e);mx=p.x;my=p.y;});
+canvas.addEventListener('pointerdown',e=>{audioInit();const p=pos(e);mx=p.x;my=p.y;handleTap();});
+$('sirenBtn').onclick=toggleSiren;
+function handleTap(){
+ // lock nearest enemy near tap OR move crosshair: tap on enemy = lock, second tap on locked = fire
+ let best=null,bd=1e9;
+ for(const e of enemies){const d=Math.hypot(e.x-mx,e.y-my);if(d<e.r+34&&d<bd){bd=d;best=e;}}
+ if(best){ if(locked===best){fireMissile();} else {locked=best;lockT=0;beep(880,.09,'square',.06);beep(1180,.09,'square',.06);} return;}
+ // tapping empty sky: if a target is already locked and near crosshair, fire
+ if(locked&&Math.hypot(locked.x-mx,locked.y-my)<locked.r+50)fireMissile();
+}
+function fireMissile(){
+ if(!running||ammo<1||reload>0){beep(180,.12,'square',.07);return;}
+ if(fireCool>0)return;fireCool=.35;ammo--;reload=1.6;
+ const sx=vw/2+ (Math.random()<.5?-40:40);
+ missiles.push({x:sx,y:vh-6,tx:0,ty:0,t:0,trail:[],speed:520});
+ locked&&(locked.beingHunted=true);
+ roar();status.textContent='🚀 موشک صیاد شلیک شد';
+ $('fireBtn').disabled=true;
+}
+$('fireBtn').onclick=()=>{audioInit();fireMissile();};
+
+/* ---------- flow ---------- */
+function startGame(){running=true;score=0;wave=1;ammo=12;shield=100;reload=0;enemies.length=missiles.length=parts.length=bombs.length=debris.length=floaters.length=0;locked=null;spawnT=.6;$('startScreen').style.display='none';$('overScreen').style.display='none';status.textContent='سامانه رهگیری فعال شد — موفق باشید فرمانده';beep(660,.1);beep(990,.1);}
+function gameOver(){running=false;$('overStats').innerHTML='امتیاز نهایی: <b style="color:#ffc76a">'+fa(score)+'</b> · موج: '+fa(wave)+'<br>پدافند شکست خورد اما تاریخ به یاد خواهد داشت.';$('overScreen').style.display='grid';boom(true);}
+$('startBtn').onclick=()=>{audioInit();if(AC&&AC.state==='suspended')AC.resume();startGame();};
+$('retryBtn').onclick=()=>{if(AC&&AC.state==='suspended')AC.resume();startGame();};
+
+/* ---------- update ---------- */
+function update(dt){
+ fireCool=Math.max(0,fireCool-dt);
+ if(running){
+  if(reload>0){reload-=dt;if(reload<=0&&ammo>0)$('fireBtn').disabled=false;}else if(ammo>0)$('fireBtn').disabled=false;
+  $('ammo').textContent=fa(ammo);
+  spawnT-=dt;
+  if(spawnT<=0){spawnEnemy();spawnT=Math.max(1.1,2.6-wave*.18);}
+  if(enemies.length===0&&spawnT>.5)spawnT=.4;
+ }
+ // enemies
+ for(let i=enemies.length-1;i>=0;i--){const e=enemies[i];
+  e.x+=e.vx*dt;e.y+=Math.sin(performance.now()/700+e.ph)*14*dt;
+  e.trail.push({x:e.x-Math.sign(e.vx)*e.w/2,y:e.y+3});if(e.trail.length>16)e.trail.shift();
+  if(locked===e){lockT+=dt;if(lockT%.35<dt)beep(1200+lockT*300,.05,'square',.04);}
+  if(running&&e.dropT!==undefined){e.dropT-=dt;if(e.dropT<=0){spawnBomb(e.x,e.y+10);e.dropT=rnd(4,9)/(1+wave*.06);}}
+  if((e.vx>0&&e.x>vw+90)||(e.vx<0&&e.x<-90)){enemies.splice(i,1);if(locked===e)locked=null;continue;}
+ }
+ // missiles
+ for(let i=missiles.length-1;i>=0;i--){const m=missiles[i];
+  // home to locked target or nearest
+  let t=locked&&enemies.includes(locked)?locked:null;
+  if(!t){let bd=1e9;for(const e of enemies){const d=Math.hypot(e.x-m.x,e.y-m.y);if(d<bd){bd=d;t=e;}}}
+  if(!t){ // hunt bombs too
+   let bd=1e9;for(const b of bombs){const d=Math.hypot(b.x-m.x,b.y-m.y);if(d<bd){bd=d;t=b;}}}
+  if(t){const dx=t.x-m.x,dy=t.y-m.y,d=Math.hypot(dx,dy)||1;m.x+=dx/d*m.speed*dt;m.y+=dy/d*m.speed*dt;
+   if(d<(t.r||t.w/2)+10){missiles.splice(i,1);
+    if(bombs.includes(t)){bombs.splice(bombs.indexOf(t),1);explode(t.x,t.y,false);addScore(150,t.x,t.y);status.textContent='✅ موشک‌کروز منهدم شد (+۱۵۰)';}
+    else{t.hp--;explode(t.x,t.y,t.hp<=0);if(t.hp<=0){enemies.splice(enemies.indexOf(t),1);if(locked===t)locked=null;addScore(100,t.x,t.y);status.textContent='✅ هدف منهدم شد (+۱۰۰)';}else status.textContent='اصابت! هدف آسیب دید';}
+    continue;}
+  } else {m.y-=m.speed*dt;if(m.y<-30){missiles.splice(i,1);continue;}}
+  m.trail.push({x:m.x,y:m.y});if(m.trail.length>26)m.trail.shift();
+ }
+ // bombs
+ for(let i=bombs.length-1;i>=0;i--){const b=bombs[i];b.t+=dt;b.vy+=130*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
+  if(b.y>vh-14){bombs.splice(i,1);damage(18);}
+ }
+ // particles/debris/floaters
+ for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=60*dt;p.vx*=.985;if(p.t>p.life)parts.splice(i,1);}
+ for(let i=debris.length-1;i>=0;i--){const d=debris[i];d.t+=dt;d.x+=d.vx*dt;d.y+=d.vy*dt;d.vy+=160*dt;d.rot+=d.vr*dt;if(d.t>d.life||d.y>vh+30)debris.splice(i,1);}
+ for(let i=floaters.length-1;i>=0;i--){const f=floaters[i];f.t+=dt;f.y-=30*dt;if(f.t>1)floaters.splice(i,1);}
+ shake*=Math.pow(.02,dt);
+ // HUD
+ $('score').textContent=fa(score);
+ $('wave').textContent=fa(wave);
+ $('waveLbl').textContent='موج '+fa(wave);
+ $('shieldB').textContent=fa(Math.round(shield))+'٪';
+ const sb=$('shieldBar');sb.style.width=shield+'%';sb.className=shield<30?'bad':shield<60?'warn':'';
+ $('reloadB').textContent=reload>0?'در حال بازپرگیری…':'آماده';
+ const rb=$('reloadBar');rb.style.width=(reload>0?100-reload/1.6*100:100)+'%';
+ $('threat').textContent=wave>=5?'بحرانی':wave>=3?'بالا':bombs.length?'حاد':'عادی';
+ // wave up
+ if(running&&score>wave*600){wave++;ammo=Math.min(20,ammo+6);status.textContent='🔼 موج '+fa(wave)+' آغاز شد — مهمات پشتیبانی رسید';beep(520,.12);beep(780,.12);}
+}
+
+/* ---------- draw ---------- */
+function starfield(){const s=update.stars||(update.stars=Array.from({length:90},()=>({x:Math.random()*2000,y:Math.random()*800,r:Math.random()*1.4+.4,a:Math.random()*.7+.2})));ctx.fillStyle='#0b141c';ctx.fillRect(0,0,vw,vh);for(const st of s){if(st.x>vw)continue;ctx.globalAlpha=st.a;ctx.fillStyle='#cfe8ff';ctx.fillRect(st.x*vw/2000,st.y*vh/800,st.r,st.r);}ctx.globalAlpha=1;}
+function drawRadar(cx,cy,r,t){
+ ctx.save();ctx.translate(cx,cy);
+ ctx.strokeStyle='rgba(140,231,190,.35)';ctx.lineWidth=1;
+ for(let i=1;i<=3;i++){ctx.beginPath();ctx.arc(0,0,r*i/3,0,6.283);ctx.stroke();}
+ ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.moveTo(0,-r);ctx.lineTo(0,r);ctx.stroke();
+ const a=t*1.6;
+ const g=ctx.createConicGradient?ctx.createConicGradient(a,0,0):null;
+ if(g){g.addColorStop(0,'rgba(120,255,190,.5)');g.addColorStop(.12,'rgba(120,255,190,0)');g.addColorStop(1,'rgba(120,255,190,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,r,0,6.283);ctx.fill();}
+ ctx.strokeStyle='rgba(140,255,200,.8)';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);ctx.stroke();
+ for(const e of enemies){const rx=(e.x-vw/2)/vw*r*1.6,ry=(e.y-vh/2)/vh*r*1.6;const d=Math.hypot(rx,ry);if(d<r){ctx.fillStyle=e.jet?'#ff6e65':'#ffc76a';ctx.beginPath();ctx.arc(rx,ry,2.6,0,6.283);ctx.fill();}}
+ ctx.fillStyle='#91f5d0';ctx.beginPath();ctx.arc(0,0,2.5,0,6.283);ctx.fill();
+ ctx.restore();
+}
+function drawJet(e){
+ ctx.save();ctx.translate(e.x,e.y);ctx.scale(Math.sign(e.vx)||1,1);
+ // trail
+ ctx.globalAlpha=.5;ctx.strokeStyle=e.jet?'#ff9c5c':'#aab4ad';ctx.lineWidth=e.jet?3:1.5;ctx.beginPath();
+ e.trail.forEach((p,i)=>{const tx=-(e.x-p.x),ty=p.y-e.y;i?ctx.lineTo(tx,ty):ctx.moveTo(tx,ty);});ctx.stroke();ctx.globalAlpha=1;
+ ctx.fillStyle=e.jet?'#5a646b':'#8e948a';
+ ctx.beginPath(); // body
+ ctx.moveTo(-e.w/2,0);ctx.lineTo(-e.w*.2,-4);ctx.lineTo(e.w*.05,-e.jet?7:10);ctx.lineTo(e.w*.4,-4);
+ ctx.lineTo(e.w/2,0);ctx.lineTo(e.w*.4,3);ctx.lineTo(e.w*.1,4);ctx.lineTo(-e.w*.15,e.jet?5:6);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#2a3238';ctx.fillRect(-e.w*.3,-1.5,e.w*.55,2.5); // intake/stripe
+ if(e.jet){ctx.fillStyle='#ffb066';ctx.beginPath();ctx.arc(-e.w/2-3,0,3.5,0,6.283);ctx.fill();ctx.globalAlpha=.4;ctx.beginPath();ctx.arc(-e.w/2-6,0,5,0,6.283);ctx.fill();ctx.globalAlpha=1;}
+ else{ctx.fillStyle='#c7ccc4';ctx.fillRect(-e.w/2-10,-1,10,2);} // drone prop
+ ctx.restore();
+}
+function drawBomb(b,t){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
+ ctx.fillStyle='#d9d4c5';ctx.beginPath();ctx.ellipse(0,0,11,4,0,0,6.283);ctx.fill();
+ ctx.fillStyle='#c0443c';ctx.fillRect(-3,-4,6,8);
+ ctx.globalAlpha=.35;ctx.fillStyle='#aaa';for(let i=1;i<4;i++){ctx.beginPath();ctx.arc(-11-i*6,0,3-i*.4,0,6.283);ctx.fill();}
+ ctx.restore();
+ // warning ring
+ ctx.strokeStyle='rgba(255,110,101,'+(.5+.5*Math.sin(t*10))+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(b.x,b.y,14,0,6.283);ctx.stroke();
+}
+function draw(){
+ const t=performance.now()/1000;
+ ctx.save();
+ if(shake>0.3)ctx.translate(rnd(-shake,shake)*.4,rnd(-shake,shake)*.4);
+ starfield();
+ // horizon + ground
+ const hy=vh*.68;
+ const sky=ctx.createLinearGradient(0,0,0,hy);sky.addColorStop(0,'#0a1622');sky.addColorStop(1,'#7a4a3e');ctx.fillStyle=sky;ctx.fillRect(0,0,vw,hy);
+ const gr=ctx.createLinearGradient(0,hy,0,vh);gr.addColorStop(0,'#1c2226');gr.addColorStop(1,'#0c1114');ctx.fillStyle=gr;ctx.fillRect(0,hy,vw,vh-hy);
+ // ridges
+ ctx.fillStyle='#141c22';ctx.beginPath();ctx.moveTo(0,hy);
+ for(let x=0;x<=vw;x+=40)ctx.lineTo(x,hy-28-Math.sin(x*.013+2)*16-Math.sin(x*.004)*10);
+ ctx.lineTo(vw,hy+4);ctx.lineTo(0,hy+4);ctx.fill();
+ ctx.fillStyle='#0d1418';ctx.beginPath();ctx.moveTo(0,hy+14);
+ for(let x=0;x<=vw;x+=40)ctx.lineTo(x,hy+10-Math.sin(x*.02+5)*8);
+ ctx.lineTo(vw,vh);ctx.lineTo(0,vh);ctx.fill();
+ // ground radar + silhouettes
+ drawRadar(vw-72,hy-46,52,t);
+ ctx.fillStyle='rgba(6,10,10,.95)';
+ // bunker
+ ctx.beginPath();ctx.moveTo(vw*.5-90,vh);ctx.lineTo(vw*.5-70,vh-34);ctx.lineTo(vw*.5+70,vh-34);ctx.lineTo(vw*.5+90,vh);ctx.closePath();ctx.fill();
+ ctx.fillStyle='rgba(145,245,208,.75)';ctx.fillRect(vw*.5-52,vh-26,16,5);ctx.fillRect(vw*.5+14,vh-26,16,5);ctx.fillRect(vw*.5-16,vh-26,32,5);
+ // operators
+ for(const s of [-1,1]){const ox=vw*.5+s*140,oy=vh-8;ctx.fillStyle='#0a1212';ctx.beginPath();ctx.arc(ox,oy-26,5,0,6.283);ctx.fill();ctx.fillRect(ox-6,oy-21,12,21);}
+ // launcher
+ ctx.fillStyle='#141d20';ctx.beginPath();ctx.moveTo(vw/2-26,vh-34);ctx.lineTo(vw/2+26,vh-34);ctx.lineTo(vw/2+16,vh-52);ctx.lineTo(vw/2-16,vh-52);ctx.closePath();ctx.fill();
+ ctx.save();ctx.translate(vw/2,vh-52);ctx.rotate(-1.35);ctx.fillStyle='#1d2a2e';ctx.fillRect(-4,-8,8,34);ctx.fillStyle='#ffc76a66';ctx.fillRect(-2,-8,4,30);ctx.restore();
+ // enemies
+ for(const e of enemies)drawJet(e);
+ // bombs
+ for(const b of bombs)drawBomb(b,t);
+ // missiles
+ for(const m of missiles){
+  ctx.globalAlpha=.7;ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();
+  m.trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle='#ffe9b0';ctx.beginPath();ctx.arc(m.x,m.y,4,0,6.283);ctx.fill();
+  ctx.fillStyle='#ffb066';ctx.beginPath();ctx.arc(m.x,m.y+6,7,0,6.283);ctx.globalAlpha=.5;ctx.fill();ctx.globalAlpha=1;
+ }
+ // particles
+ for(const p of parts){const k=1-p.t/p.life;ctx.globalAlpha=k;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r*k+1,0,6.283);ctx.fill();}ctx.globalAlpha=1;
+ for(const d of debris){ctx.save();ctx.translate(d.x,d.y);ctx.rotate(d.rot);ctx.globalAlpha=1-d.t/d.life;ctx.fillStyle='#9aa0a2';ctx.fillRect(-d.r,-d.r/2,d.r*2,d.r);ctx.restore();}ctx.globalAlpha=1;
+ // lock brackets + crosshair
+ if(locked&&enemies.includes(locked)){
+  const e=locked,c='rgba(255,110,101,'+(.6+.4*Math.sin(t*12))+')';
+  ctx.strokeStyle=c;ctx.lineWidth=2;const r=e.r+8;
+  for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){ctx.beginPath();ctx.moveTo(e.x+sx*r,e.y+sy*r-sy*10);ctx.lineTo(e.x+sx*r,e.y+sy*r);ctx.lineTo(e.x+sx*r-sx*10,e.y+sy*r);ctx.stroke();}
+  ctx.font='10px Vazirmatn,Tahoma';ctx.fillStyle='#ff9c96';ctx.textAlign='center';
+  ctx.fillText(e.jet?'F-35 قفل شد':'MQ-9 قفل شد — دوباره بزنید تا شلیک شود',e.x,e.y-e.r-14);
+ } else {
+  for(const e of enemies){ // faint brackets
+   ctx.strokeStyle='rgba(255,199,106,.35)';ctx.lineWidth=1;const r=e.r;
+   ctx.strokeRect(e.x-r,e.y-r*.7,r*2,r*1.4);
+   ctx.font='9px Tahoma';ctx.fillStyle='rgba(255,199,106,.6)';ctx.textAlign='center';
+   ctx.fillText(e.jet?'F-35':'MQ-9',e.x,e.y-r*.7-4);
+  }
+ }
+ // crosshair
+ ctx.strokeStyle=locked?'#ff9c96':'#91f5d0';ctx.lineWidth=1.5;
+ ctx.beginPath();ctx.arc(mx,my,13,0,6.283);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(mx-20,my);ctx.lineTo(mx-6,my);ctx.moveTo(mx+6,my);ctx.lineTo(mx+20,my);ctx.moveTo(mx,my-20);ctx.lineTo(mx,my-6);ctx.moveTo(mx,my+6);ctx.lineTo(mx,my+20);ctx.stroke();
+ // floaters
+ ctx.font='bold 14px Vazirmatn,Tahoma';ctx.textAlign='center';
+ for(const f of floaters){ctx.globalAlpha=1-f.t;ctx.fillStyle='#ffc76a';ctx.fillText(f.txt,f.x,f.y);}ctx.globalAlpha=1;
+ // siren vignette
+ if(sirenOn){const v=.12+.1*Math.sin(t*6);ctx.fillStyle='rgba(200,30,20,'+v+')';ctx.fillRect(0,0,vw,vh);}
+ // ammo empty hint
+ if(running&&ammo<1&&reload<=0){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,vh/2-30,vw,60);ctx.fillStyle='#ffc76a';ctx.font='14px Vazirmatn,Tahoma';ctx.textAlign='center';ctx.fillText('مهمات تمام شد! منتظر پشتیبانی مهمات…',vw/2,vh/2+5);}
+ ctx.restore();
+}
+/* ---------- loop ---------- */
+function loop(ts){const dt=Math.min((ts-last)/1000||.016,.05);last=ts;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script></body></html>
